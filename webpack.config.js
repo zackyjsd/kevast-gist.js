@@ -3,7 +3,7 @@ const path = require('path');
 function generateConfig(name) {
   const mode = name.includes('min') ? 'production' : 'development';
   return {
-    entry: './index.ts',
+    entry: ['@babel/polyfill', './index.ts'],
     mode,
     module: {
       rules: [
@@ -24,12 +24,12 @@ function generateConfig(name) {
     },
     output: {
       filename: `${name}.js`,
-      path: path.resolve(__dirname, 'dist', 'browser'),
-      library: 'KevastMemory',
+      path: path.resolve(__dirname, 'dist'),
+      library: 'KevastGist',
       libraryTarget: 'umd'
     },
     devtool: 'source-map'
   }
 }
 
-module.exports = [generateConfig('kevast-memory'), generateConfig('kevast-memory.min')];
+module.exports = [generateConfig('kevast-gist'), generateConfig('kevast-gist.min')];
