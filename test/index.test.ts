@@ -4,9 +4,14 @@ import { Kevast } from 'kevast';
 import { KevastGist } from '../index';
 import { basicTest } from './share';
 
-const TOKEN = '2cd70c5de956bbb49aeb69bc708ea2c8297e8d4d';
+const TOKEN = process.env.TOKEN;
 const INVALID_TOKEN = '10086';
-const TOKEN_WITHOUT_GIST_SCOPE = '3bb1a2b797a08958a8b52bfb002803d203ce5bc7';
+const TOKEN_WITHOUT_GIST_SCOPE = process.env.TOKEN_WITHOUT_GIST_SCOPE;
+
+if (!TOKEN || !TOKEN_WITHOUT_GIST_SCOPE) {
+  process.stderr.write('Please input TOKEN & TOKEN_WITHOUT_GIST_SCOPE through environment variables\n');
+  process.exit(1);
+}
 
 describe('Test basic function', () => {
   before(() => {
