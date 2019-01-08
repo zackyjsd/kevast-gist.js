@@ -9,26 +9,21 @@ function generateConfig(name) {
       rules: [
         {
           test: /\.ts?$/,
-          loader: 'babel-loader',
-          exclude: /node_modules/
+          loader: ['babel-loader', 'ts-loader'],
+          exclude: /node_modules/,
         },
-        {
-          test: /\.ts?$/,
-          use: 'ts-loader',
-          exclude: /node_modules/
-        }
-      ]
+      ],
     },
     resolve: {
-      extensions: [ '.ts', '.js' ]
+      extensions: [ '.ts', '.js' ],
     },
     output: {
       filename: `${name}.js`,
       path: path.resolve(__dirname, 'dist'),
       library: 'KevastGist',
-      libraryTarget: 'umd'
+      libraryTarget: 'umd',
     },
-    devtool: 'source-map'
+    devtool: 'source-map',
   }
 }
 
