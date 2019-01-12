@@ -4,7 +4,8 @@
     "noImplicitAny": true,
     "module": "CommonJS",
     "declaration": true,
-    "target": "ES2015"
+    "target": "ES2015",
+    "strict": true
   },
   "include": ["./*.ts"],
   "exclude": ["node_modules"]

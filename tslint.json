@@ -7,7 +7,10 @@
     "rules": {
         "quotemark": [true, "single"],
         "no-empty": [true, "allow-empty-functions"],
-        "trailing-comma": [true, {"multiline": "always", "singleline": "never"}]
+        "trailing-comma": [true, {"multiline": "always", "singleline": "never"}],
+        "interface-name": false,
+        "object-literal-sort-keys": false,
+        "ordered-imports": false
     },
     "rulesDirectory": []
 }

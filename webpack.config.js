@@ -1,30 +1,36 @@
 const path = require('path');
+const packageName = require('./package.json').name;
 
 function generateConfig(name) {
   const mode = name.includes('min') ? 'production' : 'development';
   return {
-    entry: ['@babel/polyfill', './index.ts'],
+    entry: './index.ts',
     mode,
     module: {
       rules: [
         {
           test: /\.ts?$/,
-          loader: ['babel-loader', 'ts-loader'],
-          exclude: /node_modules/,
+          loader: ['babel-loader', 'awesome-typescript-loader'],
         },
       ],
     },
     resolve: {
-      extensions: [ '.ts', '.js' ],
+      extensions: [ '.ts', '.js' ]
     },
     output: {
       filename: `${name}.js`,
       path: path.resolve(__dirname, 'dist'),
-      library: 'KevastGist',
-      libraryTarget: 'umd',
+      library: camelCase(packageName),
+      libraryTarget: 'umd'
     },
     devtool: 'source-map',
   }
 }
 
-module.exports = [generateConfig('kevast-gist'), generateConfig('kevast-gist.min')];
+module.exports = [generateConfig(packageName), generateConfig(`${packageName}.min`)];
+
+function camelCase(str) {
+  str = str.replace(/^([a-z])/, v => v.toUpperCase())
+  str = str.replace(/-([a-z])/g, v => v[1].toUpperCase());
+  return str;
+}
