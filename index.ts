@@ -89,13 +89,11 @@ export class KevastGist implements Storage {
     } else if (file.size === 0) {
       this.cache = {};
     } else {
-      let complete: string;
       if (file.truncated) {
-        complete = (await this.r.get(file.raw_url)).data;
+        this.cache = (await this.r.get(file.raw_url)).data;
       } else {
-        complete = file.content;
+        this.cache = JSON.parse(file.content);
       }
-      this.cache = JSON.parse(complete);
     }
   }
   private async createFile(): Promise<void> {
@@ -132,7 +130,7 @@ function handleError(err: AxiosError | Error) {
       const scopes = error.response.headers['x-oauth-scopes'] as string;
       if (!scopes || !scopes.includes('gist')) {
         throw new Error('The OAuth scopes of access token must include "gist"');
-      } else if (error.message.startsWith('404 - {"message":"Not Found')) {
+      } else if (error.response.data.message === 'Not Found') {
         throw new Error('Gist does not exist or No permission to operate this gist');
       }
     }
