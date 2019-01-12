@@ -23,7 +23,7 @@ npm install kevast-gist
 
 ### Browser
 ```html
-<script src="https://cdn.jsdelivr.net/npm/kevast-gist/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kevast-gist/dist/kevast-gist.min.js"></script>
 ```
 
 ## Usage
