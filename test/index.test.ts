@@ -1,5 +1,5 @@
 import assert = require('assert');
-import * as request from 'request-promise';
+import axios from 'axios';
 import { Kevast } from 'kevast';
 import { KevastGist } from '../index';
 
@@ -163,9 +163,10 @@ async function assertThrowsAsync(fn: Function, regExp: RegExp | Function | Objec
 }
 
 async function createGist(name: string, content: string = '{}') {
-  const data = await request.post({
-    uri: 'https://api.github.com/gists',
-    json: {
+  const { data } = await axios({
+    method: 'POST',
+    url: 'https://api.github.com/gists',
+    data: {
       files: {
         [name]: {
           content,
@@ -181,8 +182,9 @@ async function createGist(name: string, content: string = '{}') {
 }
 
 async function deleteGist(id: string) {
-  return request.delete({
-    uri: `https://api.github.com/gists/${id}`,
+  return axios({
+    method: 'DELETE',
+    url: `https://api.github.com/gists/${id}`,
     headers: {
       'Authorization': `token ${TOKEN}`,
       'User-Agent': 'KevastGist',
@@ -191,17 +193,18 @@ async function deleteGist(id: string) {
 }
 
 async function readFromGist(id: string, name: string) {
-  const data = await request.get({
-    uri: `https://api.github.com/gists/${id}`,
+  const { data } = await axios({
+    method: 'GET',
+    url: `https://api.github.com/gists/${id}`,
     headers: {
       'Authorization': `token ${TOKEN}`,
       'User-Agent': 'KevastGist',
     },
-    json: true,
   });
   const file = data.files[name];
   if (file.truncated) {
-    return request.get({
+    return axios({
+      method: 'GET',
       url: file.raw_url,
       headers: {
         'Authorization': `token ${TOKEN}`,

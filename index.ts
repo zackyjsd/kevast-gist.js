@@ -1,14 +1,7 @@
-import * as request from 'request';
-import * as requestPromise from 'request-promise';
-import { RequestError } from 'request-promise/errors';
+import axios, { AxiosError } from 'axios';
 import { MutationEvent, Storage } from 'kevast/dist/Storage';
-import { read } from 'fs';
 
-type RequestInstance = request.RequestAPI<
-  requestPromise.RequestPromise,
-  requestPromise.RequestPromiseOptions,
-  request.RequiredUriUrl
->;
+type AxiosInstance = ReturnType<typeof axios.create>;
 interface KVMap {
   [key: string]: string | undefined;
 }
@@ -47,18 +40,17 @@ export class KevastGist implements Storage {
   private gistId: string;
   private filename: string;
   private cache: KVMap;
-  private r: RequestInstance;
+  private r: AxiosInstance;
   private constructor(token: string, gistId?: string, filename?: string) {
     this.cache = {};
     this.gistId = gistId || '';
     this.filename = filename || '';
-    this.r = requestPromise.defaults({
-      baseUrl: 'https://api.github.com',
+    this.r = axios.create({
+      baseURL: 'https://api.github.com',
       headers: {
         'Authorization': `token ${token}`,
         'User-Agent': 'KevastGist',
       },
-      json: true,
     });
   }
   public get(key: string): string | undefined {
@@ -86,21 +78,20 @@ export class KevastGist implements Storage {
         },
       },
     };
-    await this.r.patch({
-      uri: `/gists/${this.gistId}`,
-      json: payload,
-    });
+    await this.r.patch(`/gists/${this.gistId}`, payload);
   }
   private async read(): Promise<void> {
-    const data = await this.r.get(`/gists/${this.gistId}`);
+    const { data } = await this.r.get(`/gists/${this.gistId}`);
     const file = data.files[this.filename];
     if (!file) {
       // Create a new one owns the filename
       await this.createFile();
-    } else if (file.size > 0) {
+    } else if (file.size === 0) {
+      this.cache = {};
+    } else {
       let complete: string;
       if (file.truncated) {
-        complete = await requestPromise.get(file.raw_url);
+        complete = (await this.r.get(file.raw_url)).data;
       } else {
         complete = file.content;
       }
@@ -115,10 +106,7 @@ export class KevastGist implements Storage {
         },
       },
     };
-    await this.r.patch({
-      uri: `/gists/${this.gistId}`,
-      json: payload,
-    });
+    await this.r.patch(`/gists/${this.gistId}`, payload);
   }
   private async createGist(): Promise<string> {
     const payload = {
@@ -130,20 +118,17 @@ export class KevastGist implements Storage {
         },
       },
     };
-    const data = await this.r.post({
-      uri: '/gists',
-      json: payload,
-    });
+    const { data } = await this.r.post('/gists', payload);
     return data.id;
   }
 }
 
-function handleError(err: RequestError | Error) {
-  const error: RequestError = err as RequestError;
+function handleError(err: AxiosError | Error) {
+  const error: AxiosError = err as AxiosError;
   if (error.response) {
-    if (error.response.statusCode === 401) {
+    if (error.response.status === 401) {
       throw new Error('Invalid access token');
-    } else if (error.response.statusCode === 404) {
+    } else if (error.response.status === 404) {
       const scopes = error.response.headers['x-oauth-scopes'] as string;
       if (!scopes || !scopes.includes('gist')) {
         throw new Error('The OAuth scopes of access token must include "gist"');

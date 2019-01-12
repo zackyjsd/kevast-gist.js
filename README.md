@@ -1,4 +1,12 @@
 # kevast-gist.js
+[![Build Status](https://img.shields.io/travis/kevast/kevast-gist.js.svg?style=flat-square)](https://travis-ci.org/kevast/kevast-gist.js)
+[![Coverage Status](https://img.shields.io/coveralls/github/kevast/kevast-gist.js.svg?style=flat-square)](https://coveralls.io/github/kevast/kevast-gist.js?branch=master)
+[![Dependencies](https://img.shields.io/david/kevast/kevast-gist.js.svg?style=flat-square)](https://david-dm.org/kevast/kevast-gist.js)
+[![Dev Dependencies](https://img.shields.io/david/dev/kevast/kevast-gist.js.svg?style=flat-square)](https://david-dm.org/kevast/kevast-gist.js?type=dev)
+[![Package Version](https://img.shields.io/npm/v/kevast-gist.svg?style=flat-square)](https://www.npmjs.com/package/kevast-gist)
+[![Open Issues](https://img.shields.io/github/issues-raw/kevast/kevast-gist.js.svg?style=flat-square)](https://github.com/kevast/kevast-gist.js/issues)
+[![MIT License](https://img.shields.io/npm/l/kevast-gist.svg?style=flat-square)](https://github.com/kevast/kevast-gist.js/blob/master/LICENSE)
+
 A [gist](https://gist.github.com/) storage for [kevast.js](https://github.com/kevast/kevast.js).
 
 ## Installation
@@ -28,16 +36,14 @@ const assert = require('assert');
 const ACCESS_TOKEN = 'YOUR GITHUB ACCESS TOKEN';
 
 (async () => {
-  const kevastGist = new KevastGist(ACCESS_TOKEN);
-  assert(kevastGist.getGistId() === undefined);
-  assert(kevastGist.getFilename() === undefined);
-
-  const kevast = await Kevast.create(kevastGist);
-  await kevast.set('key', 'value');
-  // Generated gist id and filename is available after first 'set' operation
+  const kevastGist = await KevastGist.create(ACCESS_TOKEN);
+  // Gist id and filename will be generated automatically
   console.log(kevastGist.getGistId());
   console.log(kevastGist.getFilename());
-  assert(kevast.get('key') === 'value');
+
+  const kevast = new Kevast(kevastGist);
+  await kevast.set('key', 'value');
+  assert(await kevast.get('key') === 'value');
 })();
 ```
 
@@ -51,15 +57,14 @@ const ACCESS_TOKEN = 'YOUR GITHUB ACCESS TOKEN';
 const GIST_ID = 'GIST ID';
 
 (async () => {
-  const kevastGist = new KevastGist(ACCESS_TOKEN, GIST_ID);
+  const kevastGist = await KevastGist.create(ACCESS_TOKEN, GIST_ID);
   assert(kevastGist.getGistId() === GIST_ID);
-  assert(kevastGist.getFilename() === undefined);
-
-  const kevast = await Kevast.create(kevastGist);
-  await kevast.set('key', 'value');
-  // Generated filename is available after first 'set' operation
+  // Filename will be generated automatically
   console.log(kevastGist.getFilename());
-  assert(kevast.get('key') === 'value');
+
+  const kevast = new Kevast(kevastGist);
+  await kevast.set('key', 'value');
+  assert(await kevast.get('key') === 'value');
 })();
 ```
 
@@ -71,16 +76,16 @@ const assert = require('assert');
 
 const ACCESS_TOKEN = 'YOUR GITHUB ACCESS TOKEN';
 const GIST_ID = 'GIST ID';
-const FILENAME = 'FILENAME';
+const FILENAME = 'FILE NAME';
 
 (async () => {
-  const kevastGist = new KevastGist(ACCESS_TOKEN, GIST_ID, FILENAME);
+  const kevastGist = await KevastGist.create(ACCESS_TOKEN, GIST_ID, FILENAME);
   assert(kevastGist.getGistId() === GIST_ID);
   assert(kevastGist.getFilename() === FILENAME);
 
-  const kevast = await Kevast.create(kevastGist);
+  const kevast = new Kevast(kevastGist);
   await kevast.set('key', 'value');
-  assert(kevast.get('key') === 'value');
+  assert(await kevast.get('key') === 'value');
 })();
 ```
 
