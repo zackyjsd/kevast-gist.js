@@ -16,69 +16,84 @@ let kevastGist: KevastGist;
 let kevast: Kevast;
 describe('Test basic function', () => {
   it('Initialization', async () => {
-    await assertThrowsAsync(async () => {
-      await KevastGist.create(1 as any as string);
+    assert.throws(() => {
+      const _ = new KevastGist(1 as any as string);
     }, {
       message: 'Access token must be string.',
     });
-    await assertThrowsAsync(async () => {
-      await KevastGist.create(TOKEN, 1 as any as string);
+    assert.throws(() => {
+      const _ = new KevastGist(TOKEN, 1 as any as string);
     }, {
       message: 'Gist id must be string.',
     });
-    await assertThrowsAsync(async () => {
-      await KevastGist.create(TOKEN, 'string', 1 as any as string);
+    assert.throws(() => {
+      const _ = new KevastGist(TOKEN, 'string', 1 as any as string);
     }, {
       message: 'Filename must be string.',
     });
   });
   it('Valid Access token', async () => {
-    const kg = await KevastGist.create(TOKEN);
-    kevastGist = kg;
+    kevastGist = new KevastGist(TOKEN);
     kevast = new Kevast(kevastGist);
-    gistId = kevastGist.getGistId();
     await basicTest();
+    gistId = await kevastGist.getGistId();
     await deleteGist(gistId);
   });
   it('Invalid access token', async () => {
     await assertThrowsAsync(async () => {
-      await KevastGist.create(INVALID_TOKEN);
+      kevastGist = new KevastGist(INVALID_TOKEN);
+      kevast = new Kevast(kevastGist);
+      await kevast.get('key');
     }, {
       message: 'Invalid access token',
     });
     await assertThrowsAsync(async () => {
-      await KevastGist.create(TOKEN_WITHOUT_GIST_SCOPE);
+      kevastGist = new KevastGist(TOKEN_WITHOUT_GIST_SCOPE);
+      kevast = new Kevast(kevastGist);
+      await kevast.get('key');
     }, {
       message: 'The OAuth scopes of access token must include "gist"',
     });
   });
   it('Valid Access token, valid gist id', async () => {
     gistId = await createGist('KevastTestFileName');
-    kevastGist = await KevastGist.create(TOKEN, gistId);
+    kevastGist = new KevastGist(TOKEN, gistId);
     kevast = new Kevast(kevastGist);
-    await basicTest();
+    // await basicTest();
+    await kevast.set('key', 'value');
+    assert(await readFromGist(gistId, await kevastGist.getFilename()) === JSON.stringify({key: 'value'}));
     await deleteGist(gistId);
   });
   it('Valid access token, invalid gist id', async () => {
+    // Not Exists
     await assertThrowsAsync(async () => {
-      await KevastGist.create(TOKEN, '06f031f9faa95f79569f7c76df446e51');
+      kevastGist = new KevastGist(TOKEN, '06f031f9faa95f79569f7c76df446e51');
+      kevast = new Kevast(kevastGist);
+      await kevast.get('key');
     }, {
       message: 'Gist does not exist or No permission to operate this gist',
     });
+    // No permission
     await assertThrowsAsync(async () => {
-      await KevastGist.create(TOKEN, '06f031f9faa95f79569f7c76df446e57');
+      kevastGist = new KevastGist(TOKEN, '06f031f9faa95f79569f7c76df446e57');
+      kevast = new Kevast(kevastGist);
+      await kevast.get('key');
     }, {
       message: 'Gist does not exist or No permission to operate this gist',
     });
   });
   it('InValid access token, with any gist id', async () => {
     await assertThrowsAsync(async () => {
-      await KevastGist.create(INVALID_TOKEN, 'anything');
+      kevastGist = new KevastGist(INVALID_TOKEN, 'anything');
+      kevast = new Kevast(kevastGist);
+      await kevast.get('key');
     }, {
       message: 'Invalid access token',
     });
     await assertThrowsAsync(async () => {
-      await KevastGist.create(TOKEN_WITHOUT_GIST_SCOPE, 'anything');
+      kevastGist = new KevastGist(TOKEN_WITHOUT_GIST_SCOPE, 'anything');
+      kevast = new Kevast(kevastGist);
+      await kevast.get('key');
     }, {
       message: 'The OAuth scopes of access token must include "gist"',
     });
@@ -87,17 +102,21 @@ describe('Test basic function', () => {
     const existFilename = 'KevastTest';
     const givenFilename = 'KevastTest123';
     gistId = await createGist(existFilename);
-    kevastGist = await KevastGist.create(TOKEN, gistId, givenFilename);
+    kevastGist = new KevastGist(TOKEN, gistId, givenFilename);
     kevast = new Kevast(kevastGist);
-    await basicTest();
+    // await basicTest();
+    await kevast.set('key', 'value');
+    assert(await readFromGist(gistId, await kevastGist.getFilename()) === JSON.stringify({key: 'value'}));
     await deleteGist(gistId);
   });
   it('Filename exists', async () => {
     const filename = 'KevastTest';
     gistId = await createGist(filename);
-    kevastGist = await KevastGist.create(TOKEN, gistId, filename);
+    kevastGist = new KevastGist(TOKEN, gistId, filename);
     kevast = new Kevast(kevastGist);
-    await basicTest();
+    // await basicTest();
+    await kevast.set('key', 'value');
+    assert(await readFromGist(gistId, await kevastGist.getFilename()) === JSON.stringify({key: 'value'}));
     await deleteGist(gistId);
   });
   it('Init with data', async () => {
@@ -108,7 +127,7 @@ describe('Test basic function', () => {
       key3: 'value3',
     };
     gistId = await createGist(filename, JSON.stringify(data));
-    kevastGist = await KevastGist.create(TOKEN, gistId, filename);
+    kevastGist = new KevastGist(TOKEN, gistId, filename);
     kevast = new Kevast(kevastGist);
     assert(await kevast.get('key1') === data.key1);
     assert(await kevast.get('key2') === data.key2);
@@ -118,7 +137,7 @@ describe('Test basic function', () => {
   it('Truncation Test', async () => {
     const value = '0'.repeat(980000);
     gistId = await createGist('KevastLong', JSON.stringify({key: value}));
-    kevastGist = await KevastGist.create(TOKEN, gistId, 'KevastLong');
+    kevastGist = new KevastGist(TOKEN, gistId, 'KevastLong');
     kevast = new Kevast(kevastGist);
     assert(await kevast.get('key') === value);
   });
@@ -126,12 +145,20 @@ describe('Test basic function', () => {
 
 export async function basicTest() {
   // Set
-  await kevast.set('key1', 'value1');
-  await kevast.set('key2', 'value2');
+  await kevast.bulkSet([
+    {
+      key: 'key1',
+      value: 'value1',
+    },
+    {
+      key: 'key2',
+      value: 'value2',
+    },
+  ]);
   assert(await kevast.get('key1') === 'value1');
   assert(await kevast.get('key2') === 'value2');
-  gistId = gistId || kevastGist.getGistId();
-  const filename = kevastGist.getFilename();
+  gistId = gistId || await kevastGist.getGistId();
+  const filename = await kevastGist.getFilename();
   assert(await readFromGist(gistId, filename) === JSON.stringify({
     key1: 'value1',
     key2: 'value2',
