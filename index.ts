@@ -37,15 +37,11 @@ export class KevastGist implements Storage {
     });
   }
   public async get(key: string): Promise<string | undefined> {
-    if (!this.initialized) {
-      await this.init();
-    }
+    await this.init();
     return this.cache[key];
   }
   public async mutate(event: MutationEvent) {
-    if (!this.initialized) {
-      await this.init();
-    }
+    await this.init();
     event.set.forEach((pair) => this.cache[pair.key] = pair.value);
     event.removed.forEach((key) => delete this.cache[key]);
     if (event.clear) {

@@ -32,9 +32,21 @@ describe('Test basic function', () => {
       message: 'Filename must be string.',
     });
   });
+  it('Get gist id and filename immediately', async () => {
+    kevastGist = new KevastGist(TOKEN, 'id', 'filename');
+    assert(await kevastGist.getGistId() === 'id');
+    assert(await kevastGist.getFilename() === 'filename');
+    kevastGist = new KevastGist(TOKEN);
+    gistId = await kevastGist.getGistId();
+    const filename = await kevastGist.getFilename();
+    assert(gistId.length > 0);
+    assert(filename.length > 0);
+    await deleteGist(gistId);
+  });
   it('Valid Access token', async () => {
     kevastGist = new KevastGist(TOKEN);
     kevast = new Kevast(kevastGist);
+    assert(await kevast.get('key') === undefined);
     await basicTest();
     gistId = await kevastGist.getGistId();
     await deleteGist(gistId);
