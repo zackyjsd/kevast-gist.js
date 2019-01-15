@@ -9,7 +9,12 @@ interface KVMap {
 const DEFAULT_FILENAME = 'kevast-gist-default.json';
 
 export class KevastGist implements Storage {
-  public static async create(token: string, gistId?: string, filename?: string): Promise<KevastGist> {
+  private gistId: string;
+  private filename: string;
+  private cache: KVMap;
+  private initialized: boolean;
+  private r: AxiosInstance;
+  public constructor(token: string, gistId?: string, filename?: string) {
     if (typeof token !== 'string') {
       throw TypeError('Access token must be string.');
     }
@@ -19,30 +24,8 @@ export class KevastGist implements Storage {
     if (filename !== undefined && typeof filename !== 'string') {
       throw TypeError('Filename must be string.');
     }
-    const that: KevastGist = new KevastGist(token, gistId, filename);
-    try {
-      if (typeof gistId === 'string' && typeof filename === 'string') {
-        await that.read();
-      }
-      if (gistId === undefined) {
-        that.filename = filename = DEFAULT_FILENAME;
-        that.gistId = gistId = await that.createGist();
-      }
-      if (filename === undefined) {
-        that.filename = DEFAULT_FILENAME;
-        await that.createFile();
-      }
-    } catch (err) {
-      handleError(err);
-    }
-    return that;
-  }
-  private gistId: string;
-  private filename: string;
-  private cache: KVMap;
-  private r: AxiosInstance;
-  private constructor(token: string, gistId?: string, filename?: string) {
     this.cache = {};
+    this.initialized = false;
     this.gistId = gistId || '';
     this.filename = filename || '';
     this.r = axios.create({
@@ -53,22 +36,55 @@ export class KevastGist implements Storage {
       },
     });
   }
-  public get(key: string): string | undefined {
+  public async get(key: string): Promise<string | undefined> {
+    if (!this.initialized) {
+      await this.init();
+    }
     return this.cache[key];
   }
   public async mutate(event: MutationEvent) {
-    event.set.forEach((pair) => (this.cache as KVMap)[pair.key] = pair.value);
-    event.removed.forEach((key) => delete (this.cache as KVMap)[key]);
+    if (!this.initialized) {
+      await this.init();
+    }
+    event.set.forEach((pair) => this.cache[pair.key] = pair.value);
+    event.removed.forEach((key) => delete this.cache[key]);
     if (event.clear) {
       this.cache = {};
     }
     await this.write();
   }
-  public getGistId(): string {
+  public async getGistId(): Promise<string> {
+    if (!this.gistId) {
+      await this.init();
+    }
     return this.gistId;
   }
-  public getFilename(): string {
+  public async getFilename(): Promise<string> {
+    if (!this.filename) {
+      await this.init();
+    }
     return this.filename;
+  }
+  public async init(): Promise<void> {
+    if (this.initialized) { return; }
+    try {
+      if (this.gistId && this.filename) {
+        this.cache = await this.read();
+      }
+      if (!this.gistId) {
+        this.filename = this.filename = DEFAULT_FILENAME;
+        this.gistId = this.gistId = await this.createGist();
+        this.cache = {};
+      }
+      if (!this.filename) {
+        this.filename = DEFAULT_FILENAME;
+        await this.createFile();
+        this.cache = {};
+      }
+      this.initialized = true;
+    } catch (err) {
+      handleError(err);
+    }
   }
   private async write(): Promise<void> {
     const payload = {
@@ -80,19 +96,20 @@ export class KevastGist implements Storage {
     };
     await this.r.patch(`/gists/${this.gistId}`, payload);
   }
-  private async read(): Promise<void> {
+  private async read(): Promise<KVMap> {
     const { data } = await this.r.get(`/gists/${this.gistId}`);
     const file = data.files[this.filename];
     if (!file) {
       // Create a new one owns the filename
       await this.createFile();
+      return {};
     } else if (file.size === 0) {
-      this.cache = {};
+      return {};
     } else {
       if (file.truncated) {
-        this.cache = (await this.r.get(file.raw_url)).data;
+        return (await this.r.get(file.raw_url)).data;
       } else {
-        this.cache = JSON.parse(file.content);
+        return JSON.parse(file.content);
       }
     }
   }
