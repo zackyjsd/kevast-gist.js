@@ -1,6 +1,6 @@
 {
   "name": "kevast-gist",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gist storage for kevast.js",
   "main": "dist/index.js",
   "keywords": [

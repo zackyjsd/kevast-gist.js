@@ -102,10 +102,21 @@ export class KevastGist implements Storage {
     } else if (file.size === 0) {
       return {};
     } else {
+      let content: string;
       if (file.truncated) {
-        return (await this.r.get(file.raw_url)).data;
+        const result = (await this.r.get('http://localhost:8686/' + file.raw_url)).data;
+        if (typeof result === 'object') {
+          return result;
+        } else {
+          content = result;
+        }
       } else {
-        return JSON.parse(file.content);
+        content = file.content;
+      }
+      try {
+        return JSON.parse(content);
+      } catch (err) {
+        throw new Error('Fail to parse gist content');
       }
     }
   }
