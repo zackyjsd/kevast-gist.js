@@ -31,8 +31,7 @@ export class KevastGist implements Storage {
     this.r = axios.create({
       baseURL: 'https://api.github.com',
       headers: {
-        'Authorization': `token ${token}`,
-        'User-Agent': 'KevastGist',
+        Authorization: `token ${token}`,
       },
     });
   }

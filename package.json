@@ -1,6 +1,6 @@
 {
   "name": "kevast-gist",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Gist storage for kevast.js",
   "main": "dist/index.js",
   "keywords": [
@@ -19,7 +19,7 @@
     "build:browser": "webpack",
     "build:nodejs": "tsc",
     "clean": "rm -rf ./dist/*",
-    "prepublishOnly": "yarn test && yarn build",
+    "prepublishOnly": "yarn build",
     "coverage": "istanbul cover -e .ts _mocha -- --no-timeouts --require ts-node/register \"test/**/*.ts\"",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
