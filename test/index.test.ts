@@ -147,8 +147,8 @@ describe('Test basic function', () => {
   });
   it('Truncation Test', async () => {
     const value = '0'.repeat(980000);
-    const gistId = await createGist('KevastLong', JSON.stringify({key: value}));
-    kevastGist = new KevastGist(TOKEN, gistId, 'KevastLong');
+    const gistId = await createGist('KevastLong.json', JSON.stringify({key: value}));
+    kevastGist = new KevastGist(TOKEN, gistId, 'KevastLong.json');
     kevast = new Kevast(kevastGist);
     assert(await kevast.get('key') === value);
   });

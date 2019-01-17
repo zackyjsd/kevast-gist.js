@@ -104,7 +104,7 @@ export class KevastGist implements Storage {
     } else {
       let content: string;
       if (file.truncated) {
-        const result = (await this.r.get('http://localhost:8686/' + file.raw_url)).data;
+        const result = (await this.r.get(file.raw_url)).data;
         if (typeof result === 'object') {
           return result;
         } else {
