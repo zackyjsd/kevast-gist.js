@@ -8,7 +8,6 @@ const r = axios.create({
   baseURL: 'https://api.github.com',
   headers: {
     'Authorization': `token ${process.env.TOKEN}`,
-    'User-Agent': 'KevastGist',
   },
 });
 

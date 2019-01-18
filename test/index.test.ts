@@ -212,8 +212,7 @@ async function createGist(name: string, content: string = '{}') {
       },
     },
     headers: {
-      'Authorization': `token ${TOKEN}`,
-      'User-Agent': 'KevastGist',
+      Authorization: `token ${TOKEN}`,
     },
   });
   return data.id;
@@ -224,8 +223,7 @@ async function deleteGist(id: string) {
     method: 'DELETE',
     url: `https://api.github.com/gists/${id}`,
     headers: {
-      'Authorization': `token ${TOKEN}`,
-      'User-Agent': 'KevastGist',
+      Authorization: `token ${TOKEN}`,
     },
   });
 }
@@ -235,8 +233,7 @@ async function readFromGist(id: string, name: string) {
     method: 'GET',
     url: `https://api.github.com/gists/${id}`,
     headers: {
-      'Authorization': `token ${TOKEN}`,
-      'User-Agent': 'KevastGist',
+      Authorization: `token ${TOKEN}`,
     },
   });
   const file = data.files[name];
@@ -245,8 +242,7 @@ async function readFromGist(id: string, name: string) {
       method: 'GET',
       url: file.raw_url,
       headers: {
-        'Authorization': `token ${TOKEN}`,
-        'User-Agent': 'KevastGist',
+        Authorization: `token ${TOKEN}`,
       },
     });
   } else {
