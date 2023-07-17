@@ -40,6 +40,11 @@ export class KevastGist implements Storage {
     await this.init();
     return this.cache[key];
   }
+
+    public async disableLocalCache(): Promise<void> {
+      this.initialized = false;
+  }
+  
   public async mutate(event: MutationEvent) {
     await this.init();
     event.set.forEach((pair) => this.cache[pair.key] = pair.value);
